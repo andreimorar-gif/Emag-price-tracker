@@ -1,0 +1,7 @@
+requests==2.34.2 #used to download the eMag page
+beautifulsoup4==4.15.0 #parses the HTML, used to find the price
+python-dotenv==1.2.4 #loads .env file
+boto3==1.43.122 #library for talking to AWS, used for SES email
+APScheduler==3.11.3 #runs the checks automatically
+pytest==9.2.0
+
