@@ -55,3 +55,53 @@ SCHEMA = [
     """
 
 ]
+
+def connect_db(connection_string=None):
+    """
+    :param connection_string:
+    :return: either the ones past by the argument, the default one from the top of the file, or from the .env file
+    """
+    return pyodbc.connect(connection_string or DEFAULT_CONNECTION_STRING or os.getenv("DB_CONNECTION_STRING"))
+
+def init_db(conn):
+    cursor = conn.cursor()
+    for stmt in SCHEMA:
+        cursor.execute(stmt)
+    conn.commit()
+
+def run_select(conn,sql,params=None):
+    cursor = conn.cursor()
+    if params is None:
+        cursor.execute(sql)
+    else:
+        cursor.execute(sql, params)
+
+    column_names=[]
+    for column in cursor.description:
+        column_names.append(column[0])
+
+    result = []
+    for row in cursor.fetchall():
+        row_dict = {}
+        for i in range(len(column_names)):
+            value = row[i]
+            if isinstance(value, Decimal):
+                value = float(value)
+            row_dict[column_names[i]] = value
+        result.append(row_dict)
+    return result
+
+def run_select_one(conn,sql,params=None):
+    rows = run_select(conn,sql,params)
+    if len(rows) == 0:
+        return None
+    return rows[0]
+
+def run_change(conn,sql,params=None):
+    cursor = conn.cursor()
+    if params is None:
+        cursor.execute(sql)
+    else:
+        cursor.execute(sql, params)
+    conn.commit()
+    return cursor
