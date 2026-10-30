@@ -2,6 +2,8 @@ import os
 from decimal import Decimal
 import pyodbc
 
+from tracker.exceptions import DatabaseConnectionException
+
 DEFAULT_CONNECTION_STRING = (
     "DRIVER={ODBC Driver 18 for SQL Server};"
     "SERVER=localhost\\SQLEXPRESS;DATABASE=EmagTracker;"
@@ -42,7 +44,6 @@ SCHEMA = [
         id INT PRIMARY KEY IDENTITY(1,1),
         product_id INT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
         price DECIMAL(10,2),
-        old_price DECIMAL(10,2),
         currency NVARCHAR(10),
         seller NVARCHAR(100),
         in_stock BIT NOT NULL,
@@ -59,9 +60,13 @@ SCHEMA = [
 def connect_db(connection_string=None):
     """
     :param connection_string:
-    :return: either the ones past by the argument, the default one from the top of the file, or from the .env file
+    :return: either the ones past by the argument, the default one from the top of the file, or from the .env.example file
     """
-    return pyodbc.connect(connection_string or DEFAULT_CONNECTION_STRING or os.getenv("DB_CONNECTION_STRING"))
+    try:
+        return pyodbc.connect(connection_string or DEFAULT_CONNECTION_STRING or os.getenv("DB_CONNECTION_STRING"))
+    except pyodbc.Error as e:
+        raise DatabaseConnectionException("Could not connect to SQL Server") from e
+
 
 def init_db(conn):
     cursor = conn.cursor()
@@ -105,3 +110,4 @@ def run_change(conn,sql,params=None):
         cursor.execute(sql, params)
     conn.commit()
     return cursor
+
