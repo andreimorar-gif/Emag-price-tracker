@@ -4,4 +4,5 @@ python-dotenv==1.2.4 #loads .env file
 boto3==1.43.122 #library for talking to AWS, used for SES email
 APScheduler==3.11.3 #runs the checks automatically
 pytest==9.2.0
+pyodbc==5.3.0 #connects Python to SQL Server
 
