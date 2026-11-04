@@ -57,13 +57,13 @@ SCHEMA = [
 
 ]
 
-def connect_db(connection_string=None):
+def connect(connection_string=None):
     """
     :param connection_string:
-    :return: either the ones past by the argument, the default one from the top of the file, or from the .env.example file
+    :return: either the ones past by the argument, from the .env.example file, or the default one from the top of the file
     """
     try:
-        return pyodbc.connect(connection_string or DEFAULT_CONNECTION_STRING or os.getenv("DB_CONNECTION_STRING"))
+        return pyodbc.connect(connection_string or os.getenv("DB_CONNECTION_STRING") or DEFAULT_CONNECTION_STRING)
     except pyodbc.Error as e:
         raise DatabaseConnectionException("Could not connect to SQL Server") from e
 
