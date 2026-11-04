@@ -18,7 +18,7 @@ HEADERS = {
 class PriceInfo:
     name: str | None = None
     price: float | None = None
-    currency: str | None = None
+    priceCurrency: str | None = None
     seller: str | None = None
     in_stock: bool = True
     source: str = "none"
@@ -43,17 +43,10 @@ def parse_price(text:str):
 
 def find_product_in_json(data):
     products=[]
-    if isinstance(data, list):
-        for item in data:
-            products.extend(find_product_in_json(item))
-    elif isinstance(data, dict):
+    if isinstance(data, dict):
         data_type=data.get("@type")
         if data_type == "Product" or (isinstance(data_type,list) and "Product" in data_type):
             products.append(data)
-        #this is not needed for eMAG because they don't use this graph,
-        #but is good to have, other sites use it
-        if "@graph" in data:
-            products.extend(find_product_in_json(data["@graph"]))
     return products
 
 def extract_price(html):
@@ -74,7 +67,7 @@ def extract_price(html):
             return PriceInfo(
                 name=product.get("name"),
                 price=price,
-                currency=offers.get("priceCurrency"),
+                priceCurrency=offers.get("priceCurrency"),
                 seller=seller.get("name"),
                 in_stock="OutOfStock" not in availability,
                 source="json-ld"
