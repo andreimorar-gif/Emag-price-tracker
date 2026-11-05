@@ -111,3 +111,52 @@ def run_change(conn,sql,params=None):
     conn.commit()
     return cursor
 
+def get_or_create_user(conn,email):
+    existing = run_select_one(conn,"SELECT id FROM users WHERE email = ?",[email])
+    if existing:
+        return existing["id"]
+
+    run_change(conn,"INSERT INTO users (email) VALUES (?)",[email])
+    new_user = run_select_one(conn,"SELECT id FROM users WHERE email = ?",[email])
+    return new_user["id"]
+
+def get_or_create_product(conn,url):
+    existing = run_select_one(conn,"SELECT id FROM products WHERE url = ?",[url])
+    if existing:
+        return existing["id"]
+
+    run_change(conn,"INSERT INTO products (url) VALUES (?)",[url])
+    new_product = run_select_one(conn,"SELECT id FROM products WHERE url = ?",[url])
+    return new_product["id"]
+
+def update_product_name(conn,product_id,name):
+    run_change(conn,"UPDATE products SET name = ? WHERE id = ?",[name[:255],product_id])
+
+def track(conn,user_id,product_id,target_price=None):
+    existing = run_select_one(
+        conn,
+        "SELECT user_id FROM tracked_products WHERE user_id = ? AND product_id = ?",
+        [user_id, product_id]
+    )
+    if existing:
+        run_change(
+            conn,
+            "UPDATE tracked_products SET target_price = ? WHERE user_id = ? AND product_id = ?",
+            [target_price, user_id, product_id]
+        )
+    else:
+        run_change(
+            conn,
+            "INSERT INTO tracked_products (user_id, product_id,target_price) VALUES (?, ?, ?)",
+            [user_id, product_id, target_price]
+        )
+
+def untrack(conn,email,product_id):
+    user = run_select_one(conn,"SELECT id FROM users WHERE email = ?",[email])
+    if not user:
+        return
+    run_change(
+        conn,
+        "DELETE FROM tracked_products WHERE user_id = ? AND product_id = ?",
+        [user["id"], product_id]
+    )
