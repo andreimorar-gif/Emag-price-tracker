@@ -209,3 +209,23 @@ def set_last_notified(conn,user_id,product_id,price):
     """
     run_change(conn,sql,[price,user_id,product_id])
 
+def list_tracked(conn):
+    sql="""
+    SELECT U.email,
+           P.id,
+           P.name,
+           P.url,
+           TP.target_price,
+           (SELECT TOP 1 PH.price
+           FROM price_history PH
+           WHERE PH.product_id = P.id AND PH.price is not null
+           ORDER BY PH.checked_at DESC, PH.id DESC) AS last_price,
+           (SELECT MIN(PH.price)
+           FROM price_history PH
+           WHERE PH.product_id = P.id) AS min_price
+    FROM tracked_products TP
+    INNER JOIN users U ON TP.user_id = U.id
+    INNER JOIN products P ON TP.product_id = P.id
+    ORDER BY U.email, P.id
+    """
+    return run_select(conn,sql)

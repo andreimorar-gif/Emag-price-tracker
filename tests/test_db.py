@@ -120,3 +120,13 @@ def test_set_last_notified_saves_and_resets(conn):
 
     db.set_last_notified(conn,user_id,product_id,None)
     assert db.watchers(conn,product_id)[0]["last_notified_price"] is None
+
+def test_list_shows_current_and_lowest_price(conn):
+    user_id = db.get_or_create_user(conn,"a@gmail.com")
+    product_id = db.get_or_create_product(conn,URL)
+    db.track(conn,user_id,product_id)
+    for price in [500,400,450]:
+        db.record_price(conn,product_id,PriceInfo(price=price,priceCurrency="RON"))
+    row=db.list_tracked(conn)[0]
+    assert row["last_price"]==450
+    assert row["min_price"]==400
