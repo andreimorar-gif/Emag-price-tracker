@@ -201,3 +201,11 @@ def watchers(conn,product_id):
     """
     return run_select(conn,sql,[product_id])
 
+def set_last_notified(conn,user_id,product_id,price):
+    sql="""
+    UPDATE tracked_products 
+    SET last_notified_price = ? 
+    WHERE user_id = ? AND product_id = ?
+    """
+    run_change(conn,sql,[price,user_id,product_id])
+

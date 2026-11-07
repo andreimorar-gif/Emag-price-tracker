@@ -109,3 +109,14 @@ def test_watchers_lists(conn):
         db.track(conn,db.get_or_create_user(conn,email),product_id,1000)
     emails = sorted(row["email"] for row in db.watchers(conn,product_id))
     assert emails==["a@gmail.com","b@gmail.com"]
+
+def test_set_last_notified_saves_and_resets(conn):
+    user_id = db.get_or_create_user(conn,"a@gmail.com")
+    product_id = db.get_or_create_product(conn,URL)
+    db.track(conn,user_id,product_id)
+
+    db.set_last_notified(conn,user_id,product_id,1000)
+    assert db.watchers(conn,product_id)[0]["last_notified_price"]==1000
+
+    db.set_last_notified(conn,user_id,product_id,None)
+    assert db.watchers(conn,product_id)[0]["last_notified_price"] is None
