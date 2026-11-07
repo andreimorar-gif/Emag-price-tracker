@@ -168,3 +168,27 @@ def products_to_check(conn):
         INNER JOIN tracked_products T ON P.id = T.product_id
         """
     return run_select(conn,sql)
+
+def latest_price(conn,product_id):
+    sql="""
+    SELECT TOP 1 price
+    FROM price_history
+    WHERE product_id = ? AND price is not null
+    ORDER BY checked_at DESC, id DESC
+    """
+    row=run_select_one(conn,sql,[product_id])
+    if row is None:
+        return None
+    return row["price"]
+
+def record_price(conn,product_id,info):
+    sql="""
+    INSERT INTO price_history (product_id, price, currency, seller, in_stock)
+    VALUES (?, ?, ?, ?, ?)
+    """
+    if info.in_stock:
+        in_stock = True
+    else:
+        in_stock = False
+    run_change(conn,sql,[product_id,info.price,info.priceCurrency,info.seller,in_stock])
+

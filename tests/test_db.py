@@ -76,3 +76,29 @@ def test_only_tracked_products_are_checked(conn):
     products=db.products_to_check(conn)
     assert len(products)==1
     assert products[0]["id"]==product_id
+
+def test_latest_price_is_none_before_check(conn):
+    product_id = db.get_or_create_product(conn,URL)
+    assert db.latest_price(conn,product_id) is None
+
+def test_latest_price_skips_checks_without_price(conn):
+    product_id = db.get_or_create_product(conn,URL)
+    db.record_price(conn,product_id,PriceInfo(price=800.0,priceCurrency="RON"))
+    db.record_price(conn,product_id,PriceInfo(price=None,in_stock=False))
+    assert db.latest_price(conn,product_id) == 800.0
+
+def test_record_price_saves_every_column(conn):
+    product_id = db.get_or_create_product(conn,URL)
+    db.record_price(conn,product_id,PriceInfo(price=800.0,priceCurrency="RON",seller="eMAG",in_stock=True))
+    row=db.run_select_one(conn,
+                        """
+                            SELECT price,currency,seller,in_stock
+                            FROM price_history
+                            WHERE product_id = ?
+                            """,
+                    [product_id]
+    )
+    assert row["price"]==800.0
+    assert row["currency"]=="RON"
+    assert row["seller"]=="eMAG"
+    assert row["in_stock"] is True
