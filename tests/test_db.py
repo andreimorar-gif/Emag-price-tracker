@@ -102,3 +102,10 @@ def test_record_price_saves_every_column(conn):
     assert row["currency"]=="RON"
     assert row["seller"]=="eMAG"
     assert row["in_stock"] is True
+
+def test_watchers_lists(conn):
+    product_id = db.get_or_create_product(conn,URL)
+    for email in ["a@gmail.com","b@gmail.com"]:
+        db.track(conn,db.get_or_create_user(conn,email),product_id,1000)
+    emails = sorted(row["email"] for row in db.watchers(conn,product_id))
+    assert emails==["a@gmail.com","b@gmail.com"]

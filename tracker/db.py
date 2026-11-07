@@ -192,3 +192,12 @@ def record_price(conn,product_id,info):
         in_stock = False
     run_change(conn,sql,[product_id,info.price,info.priceCurrency,info.seller,in_stock])
 
+def watchers(conn,product_id):
+    sql="""
+    SELECT U.id AS user_id,U.email,TP.target_price,TP.last_notified_price
+    FROM tracked_products TP
+    INNER JOIN users U ON TP.user_id = U.id
+    WHERE TP.product_id = ?
+    """
+    return run_select(conn,sql,[product_id])
+
