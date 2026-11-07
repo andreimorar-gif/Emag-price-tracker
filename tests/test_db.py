@@ -130,3 +130,10 @@ def test_list_shows_current_and_lowest_price(conn):
     row=db.list_tracked(conn)[0]
     assert row["last_price"]==450
     assert row["min_price"]==400
+
+def test_history_keeps_checks_in_order(conn):
+    product_id = db.get_or_create_product(conn,URL)
+    for price in [500,400,450]:
+        db.record_price(conn,product_id,PriceInfo(price=price,priceCurrency="RON"))
+    prices=[row["price"] for row in db.history(conn,product_id)]
+    assert prices==[500,400,450]

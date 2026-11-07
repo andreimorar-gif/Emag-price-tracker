@@ -229,3 +229,12 @@ def list_tracked(conn):
     ORDER BY U.email, P.id
     """
     return run_select(conn,sql)
+
+def history(conn,product_id):
+    sql="""
+    SELECT checked_at, price, in_stock
+    FROM price_history
+    WHERE product_id = ?
+    ORDER BY checked_at, id 
+    """
+    return run_select(conn,sql,[product_id])
