@@ -67,3 +67,12 @@ def test_untrack_removes_product(conn):
 
 def test_untrack_unkown_user_does_nothing(conn):
     db.untrack(conn,"random@gmail.com",1)
+
+def test_only_tracked_products_are_checked(conn):
+    user_id = db.get_or_create_user(conn,"a@gmail.com")
+    product_id = db.get_or_create_product(conn,URL)
+    db.get_or_create_product(conn,"https://www.emag.ro/test/pd/abc/")
+    db.track(conn,user_id,product_id)
+    products=db.products_to_check(conn)
+    assert len(products)==1
+    assert products[0]["id"]==product_id

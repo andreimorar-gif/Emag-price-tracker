@@ -160,3 +160,11 @@ def untrack(conn,email,product_id):
         "DELETE FROM tracked_products WHERE user_id = ? AND product_id = ?",
         [user["id"], product_id]
     )
+
+def products_to_check(conn):
+    sql="""
+        SELECT DISTINCT P.id, P.url, P.name
+        FROM products P
+        INNER JOIN tracked_products T ON P.id = T.product_id
+        """
+    return run_select(conn,sql)
