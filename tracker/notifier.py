@@ -25,3 +25,13 @@ def format_alert(product_name,url,old_price,new_price,currency):
     lines.append(url)
     body="\n".join(lines)+"\n"
     return subject,body
+
+class ConsoleNotifier:
+    def send(self,to,subject,body):
+        print()
+        print(f"ALERT to {to}")
+        print(subject)
+        print(body)
+
+def get_notifier():
+    return ConsoleNotifier()

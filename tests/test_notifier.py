@@ -30,3 +30,10 @@ def test_alert_without_previous_price():
 def test_alert_with_missing_name_and_currency():
     subject, body = format_alert(None, URL, 500, 400, None)
     assert subject == "Price drop: Your product is now 400.00 RON"
+
+def test_console_notifier_prints_alert(capsys):
+    ConsoleNotifier().send("a@gmail.com","Price drop","New price: 400.00 RON")
+    captured = capsys.readouterr().out
+    assert "a@gmail.com" in captured
+    assert "Price drop" in captured
+    assert "New price: 400.00 RON" in captured
