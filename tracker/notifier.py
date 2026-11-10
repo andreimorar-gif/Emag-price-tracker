@@ -1,3 +1,5 @@
+import os
+
 from tracker.exceptions import NotificationException
 
 def format_alert(product_name,url,old_price,new_price,currency):
@@ -33,5 +35,30 @@ class ConsoleNotifier:
         print(subject)
         print(body)
 
+class EmailNotifier:
+    def __init__(self,sender,region,client=None):
+        self.sender = sender
+        if client is None:
+            import boto3
+            client = boto3.client("ses",region_name=region)
+        self.client = client
+
+    def send(self,to,subject,body):
+        try:
+            self.client.send_email(
+                Source=self.sender,
+                Destination={"ToAddresses": [to]},
+                Message={
+                    "Subject": {"Data": subject, "Charset": "utf-8"},
+                    "Body": {"Text": {"Data": body, "Charset": "utf-8"}},
+                }
+            )
+        except Exception as e:
+            raise NotificationException(f"Could not send email to {to}") from e
+
 def get_notifier():
-    return ConsoleNotifier()
+    sender = os.getenv("SES_SENDER")
+    region = os.getenv("AWS_REGION")
+    if sender is None or region is None:
+        return ConsoleNotifier()
+    return EmailNotifier(sender,region)
